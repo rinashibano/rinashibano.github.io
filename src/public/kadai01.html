@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>天気</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="googleSheets.js"></script>
+  </head>
+  <style type="text/css">
+    /* .center-box {
+      text-align: center;
+    } */
+    h1 {
+      /* text-align: center; */
+      color: rgb(215, 121, 255);
+    }
+    div {
+      /* text-align: center; */
+      color: rgb(134, 134, 134);
+    }
+    p {
+      /* text-align: center; */
+      font-size: 20%;
+      color: rgb(134, 134, 134);
+    }
+    .center-box {
+      font-size: 10%;
+    }
+
+  </style>
+  <body>
+    <h1>☀⛅天気を操ろう☔⛄</h1>
+    <div>
+      <div>あなたのID: <span id="myid"></span></div>
+      <div>
+        ルームID: <input id="room" type="text" size="10" value="room001" />
+      </div>
+      <button id="connect">ルームに入る</button>
+      <!-- <div>受信した情報はコンソールログで確認してください</div> -->
+      <div>
+        ルームに入るを押して携帯の動きと女の子の動きをリンクさせましょう。
+      </div>
+      <div>ボタンをクリックして天気を選択してください。</div>
+    
+      <button type="btn" value="Click" onclick="myhare()" />🌞</button>
+      <button type="btn" value="Click" onclick="myyuki()" />⛄</button>
+      <button type="btn" value="Click" onclick="mykumo()" />⛅</button>
+      <div id="myh1"></div>
+    </div>
+
+    <script>
+      "use strict";
+
+      let num=0;
+      //天気画像
+      let tenki2;
+      let tenki3;
+      let tenki1;
+
+
+      var myhare = function () {
+        var myh1 = document.getElementById("myh1");
+        myh1.innerHTML = "晴れました！";
+        num=2;
+        tenki2 = loadImage("img/2.png");
+        console.log("2");
+      };
+
+      var myyuki = function () {
+        var myh1 = document.getElementById("myh1");
+        myh1.innerHTML = "雪が降りました！";
+        num=3;
+        tenki3 = loadImage("img/3.png");
+        console.log("3");
+      };
+
+      var mykumo = function () {
+        var myh1 = document.getElementById("myh1");
+        myh1.innerHTML = "曇りました！";
+        num=1;
+        tenki1 = loadImage("img/1.png");
+        console.log("１");
+      };
+
+      let socket = io.connect();
+      let myid;
+
+      let room = document.querySelector("#room").value;
+      let btn = document.querySelector("#connect");
+      let b = 0;
+      let g = 0;
+
+      btn.addEventListener("click", function () {
+        socket.emit("join", room);
+        btn.remove();
+      });
+
+      socket.on("mylogin", function (data) {
+        myid = data;
+        document.querySelector("#myid").innerHTML = myid;
+        console.log("あなたのID: ", myid);
+      });
+
+      socket.on("sensor", function (data) {
+        g = parseFloat(data.g);
+        b = parseFloat(data.b);
+        console.log(g);
+      });
+
+      //
+
+      // $(function () {
+      //   /* global $ loadSheets */
+      //   const sheetId = "1C7MKxuPkqCxVGclVlqXK1CJ7--DC4DLAlxx6Ckn6Sgk";
+      //   //https://docs.google.com/spreadsheets/d/1C7MKxuPkqCxVGclVlqXK1CJ7--DC4DLAlxx6Ckn6Sgk/edit?usp=sharing
+      //   const range = "tenki!A1:E100";
+      //   const max = 3;
+
+      //   $("#hare").on("click", showdata);
+      //   async function showdata() {
+      //     let data = await loadSheets(sheetId, range);
+      //     //console.log(data.values[0][0]);
+      //     $("#contents").append(data.values[1][1]);
+      //   }
+      // });
+
+      function setup() {
+        createCanvas(500, 500, 200, 200);
+        background(200);
+      }
+
+
+      let x = 250;
+      let y = 250;
+      let girl;
+      //let yukispeed=10;
+
+      function preload() {
+        girl = loadImage("img/girl.png");
+        // var myhare = function () {
+        //   tenki = loadImage("img/2.png");
+        // };
+        
+        // var myyuki = function () {
+        //   tenki = loadImage("img/2.png");
+        // };
+          
+        // var mykumo = function () {
+        //   tenki = loadImage("img/1.png");
+        // };
+        //tenki = loadImage("img/"+num+".png");
+      }
+
+      function draw() {
+        background(200);
+        x = 250 + 3 * g;
+        y = 250 + 3 * b;
+        if(num==1){
+          image(tenki1, 0, 0, 200, 200);
+        }
+        if(num==2){
+          background(255,255,145);
+          image(tenki2, 0, 0, 200, 200);
+        }
+        if(num==3){
+          background(20);
+          image(tenki3, 320, 280, 200, 200);
+          //snow();
+        }
+
+        image(girl, x, y, 100, 150);
+        //image(tenki, 0, 0, 200, 200);d
+      }
+    </script>
+    <!-- <script
+      async
+      defer
+      src="https://apis.google.com/js/api.js"
+      onload="handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()"
+    ></script> -->
+  </body>
+</html>
